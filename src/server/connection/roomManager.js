@@ -108,14 +108,14 @@ export default function roomManager(socket, emitTo, socketTo, socketEmit) {
     socketEmit('room-entered', {
       roomId,
       users,
-      mods: (await roomModerators.getAll()) || [],
-      rpgSchema: (await rpgSchema.get(roomId)?.data) || {},
-      roomData: (await roomData.get(roomId))?.data || {},
+      mods: (await roomModerators.getAll()) ?? [],
+      rpgSchema: ((await rpgSchema.get(roomId))?.data) ?? {},
+      roomData: (await roomData.get(roomId))?.data ?? {},
       roomPrivateData:
         userId === room.ownerId || userId === getIniConfig('OWNER_ID')
           ? (await privateRoomData.get(roomId))?.data || {}
           : {},
-      data: room || {},
+      data: room ?? {},
     });
 
     // Complete
