@@ -887,7 +887,7 @@ export default function roomManager(socket, emitTo, socketTo, socketEmit) {
     fn({ success: true });
   });
 
-  socket.on('update-room-schema', async (data, fn) => {
+  socket.on('update-rpg-schema', async (data, fn) => {
     if (noDataInfo(data, fn)) return;
     const { roomId, values } = data;
     // Validate values
@@ -917,7 +917,7 @@ export default function roomManager(socket, emitTo, socketTo, socketEmit) {
     await rpgSchema.set(roomId, { data: values });
     // Notify all users in the room about the updated data
     const result = await rpgSchema.get(roomId);
-    socketTo(roomId, 'room-schema-updated', {
+    socketTo(roomId, 'rpg-schema-updated', {
       roomId,
       values: result?.data ?? {},
     });
