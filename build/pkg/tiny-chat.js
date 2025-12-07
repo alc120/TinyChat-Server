@@ -12,7 +12,15 @@ const config = {
   babelSourceDir3: 'src/api',
 };
 
-// Run Babel
+const clearDistFolder = () => {
+  const distPath = path.resolve(config.outputDir);
+  console.log('🧹 Clearing dist folder before build...');
+  fs.emptyDirSync(distPath);
+};
+
+// ----------------------
+// Babel Transpile
+// ----------------------
 const transpileWithBabel = () => {
   console.log('🔨 Transpiling code with Babel...');
   execSync(
@@ -26,7 +34,26 @@ const transpileWithBabel = () => {
   );
 };
 
-// Package with Nexe
+// ----------------------
+// Copy sqlite3 only
+// ----------------------
+const copySqlite3Modules = () => {
+  const sourceDir = path.resolve('node_modules/sqlite3');
+  const destDir = path.resolve(`dist/${config.outputDirName}/node_modules/sqlite3`);
+
+  if (!fs.existsSync(sourceDir)) {
+    console.log('⚠️ sqlite3 not found in node_modules.');
+    return;
+  }
+
+  console.log('📂 Copying node_modules/sqlite3 to the final destination...');
+  fs.ensureDirSync(destDir);
+  fs.copySync(sourceDir, destDir);
+};
+
+// ----------------------
+// Nexe package
+// ----------------------
 const packageWithNexe = async () => {
   console.log(`📦 Packaging with nexe...`);
   const rootFolder = path.join(__dirname, '../../');
@@ -41,7 +68,7 @@ const packageWithNexe = async () => {
       InternalName: 'tiny-chat',
       LegalCopyright: 'GNU AFFERO GENERAL PUBLIC LICENSE Version 3, 19 November 2007',
     },
-    build: true, //required to use patches
+    build: true,
   };
 
   await compile({
@@ -59,7 +86,9 @@ const packageWithNexe = async () => {
   });
 };
 
-// Main build
+// ----------------------
+// Build main
+// ----------------------
 const buildApp = async () => {
   console.log('🎯 Build Information:');
   console.log(`   - Dist Directory: ${config.outputDirName}`);
@@ -68,8 +97,12 @@ const buildApp = async () => {
   console.log(`   - Proxy Directory: ${config.babelSourceDir2}`);
   console.log(`   - API Directory: ${config.babelSourceDir3}`);
 
+  clearDistFolder();
   transpileWithBabel();
   await packageWithNexe();
+
+  // Copy sqlite3 after building
+  copySqlite3Modules();
 
   console.log('🚀 Build completed successfully!');
 };
