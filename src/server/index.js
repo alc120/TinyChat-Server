@@ -68,14 +68,6 @@ startFiles().then(async (appStorage) => {
     roomManager(socket, emitTo, socketTo, socketEmit);
   });
 
-  // Start server
-  process.on('SIGINT', async () => {
-    try {
-      proxy.disconnect();
-      io.close();
-    } catch {}
-  });
-
   io.listen(appStorage.config.server.port);
   console.log(
     `[APP] Server running on port ${appStorage.config.server.port}${proxy ? ` and in the proxy ${proxyAddress}` : ''}`,

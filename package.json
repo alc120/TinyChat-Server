@@ -6,19 +6,12 @@
         "start": "npx babel-node src/server/index.js",
         "start:proxy": "npx babel-node src/proxy/index.js",
         "build": "node build/pkg/tiny-chat.js",
-        "build:all": "node build/pkg/tiny-chat.js --os=all",
-        "build:win32": "node build/pkg/tiny-chat.js --os=win32",
-        "build:linux": "node build/pkg/tiny-chat.js --os=linux",
-        "build:darwin": "node build/pkg/tiny-chat.js --os=darwin",
-        "fix:prettier": "prettier --write ./src/api/* && prettier --write ./src/proxy/* && prettier --write ./temp/*"
+        "fix:prettier": "prettier --write ./src/api/* && prettier --write ./src/proxy/* && prettier --write ./build/* && prettier --write ./temp/*"
     },
     "author": {
         "name": "JasminDreasond (Yasmin Seidel)",
         "email": "tiny@puddy.club",
         "url": "https://github.com/JasminDreasond"
-    },
-    "pkg": {
-        "assets": "dist/src/server/config.ini"
     },
     "dependencies": {
         "buffer": "^6.0.3",

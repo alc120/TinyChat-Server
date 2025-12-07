@@ -1,80 +1,77 @@
 const { execSync } = require('child_process');
 const path = require('path');
-const os = require('os');
+const { compile } = require('nexe');
 const fs = require('fs-extra');
 
-// Detecta o sistema operacional padrão caso não seja especificado
-const targetNodeVersion = 'node18';
-const defaultTarget = (value) => {
-    switch (value) {
-        case 'win32': return `${targetNodeVersion}-win-x64`;
-        case 'darwin': return `${targetNodeVersion}-mac-x64`;
-        case 'linux': return `${targetNodeVersion}-linux-x64`;
-        case 'all': return `${targetNodeVersion}-linux-x64,${targetNodeVersion}-win-x64,${targetNodeVersion}-mac-x64`;
-        default: return `${targetNodeVersion}-linux-x64`;
-    }
-};
-
-// Obtém argumentos da linha de comando
-const args = process.argv.slice(2);
-const userTarget = args.find(arg => arg.startsWith('--os='));
-const selectedTarget = defaultTarget(userTarget ? userTarget.split('=')[1] : os.platform());
-
-// Configurações
 const config = {
-    root: 'src/server',
-    inputFile: 'src/server/index.js',       // Arquivo principal de entrada
-    outputDir: 'dist',                            // Diretório de saída
-    nodeModulesDir: 'node_modules',               // Diretório de node_modules
-    babelSourceDir: 'src/server',          // Diretório a ser transpile
-    targets: selectedTarget,                      // Alvo para Pkg
+  outputDir: 'dist',
+  outputDirName: 'Tiny-RP-Chat',
+  nodeModulesDir: 'node_modules',
+  babelSourceDir: 'src/server',
+  babelSourceDir2: 'src/proxy',
+  babelSourceDir3: 'src/api',
 };
 
-// Função para copiar a pasta node_modules para o diretório de saída
-const copyNodeModules = async () => {
-    const sourceDir = path.resolve(config.nodeModulesDir);
-    const destDir = path.resolve(`dist/${config.root}`, 'node_modules');
-
-    if (!fs.existsSync(destDir)) {
-        console.log('📂 Copying node_modules to the output directory...');
-        await fs.copy(sourceDir, destDir, {
-            overwrite: true,
-            errorOnExist: false
-        });
-    }
-};
-
-// Função para executar o comando Babel
+// Run Babel
 const transpileWithBabel = () => {
-    console.log('🔨 Transpiling code with Babel...');
-    execSync(`npx babel ${config.babelSourceDir} --out-dir ${config.outputDir}/${config.babelSourceDir} --copy-files`);
+  console.log('🔨 Transpiling code with Babel...');
+  execSync(
+    `npx babel ${config.babelSourceDir} --out-dir ${config.outputDir}/${config.babelSourceDir} --copy-files`,
+  );
+  execSync(
+    `npx babel ${config.babelSourceDir2} --out-dir ${config.outputDir}/${config.babelSourceDir2} --copy-files`,
+  );
+  execSync(
+    `npx babel ${config.babelSourceDir3} --out-dir ${config.outputDir}/${config.babelSourceDir3} --copy-files`,
+  );
 };
 
-// Função para empacotar o aplicativo com Pkg
-const packageWithPkg = () => {
-    console.log(`📦 Packaging for target: ${config.targets}...`);
-    execSync(`pkg dist/${config.inputFile} --targets ${config.targets} --output ${path.resolve(config.outputDir, 'bin/tiny-chat')} --config package.json`);
+// Package with Nexe
+const packageWithNexe = async () => {
+  console.log(`📦 Packaging with nexe...`);
+  const rootFolder = path.join(__dirname, '../../');
+
+  const cfgBase = {
+    name: 'Tiny Roleplay Server Chat',
+    rc: {
+      CompanyName: 'JasminDreasond',
+      ProductName: 'Tiny Roleplay Server Chat',
+      FileDescription: 'Lightweight server for roleplay/RPG chat rooms.',
+      OriginalFilename: 'tiny-chat.exe',
+      InternalName: 'tiny-chat',
+      LegalCopyright: 'GNU AFFERO GENERAL PUBLIC LICENSE Version 3, 19 November 2007',
+    },
+    build: true, //required to use patches
+  };
+
+  await compile({
+    resources: [path.join(rootFolder, './dist/src/server/config.ini')],
+    input: path.join(rootFolder, './dist/src/server/index.js'),
+    output: path.join(rootFolder, `./dist/${config.outputDirName}/tiny-chat`),
+    ...cfgBase,
+  });
+
+  await compile({
+    resources: [path.join(rootFolder, './dist/src/proxy/config.ini')],
+    input: path.join(rootFolder, './dist/src/proxy/index.js'),
+    output: path.join(rootFolder, `./dist/${config.outputDirName}/tiny-chat-proxy`),
+    ...cfgBase,
+  });
 };
 
-// Função principal
+// Main build
 const buildApp = async () => {
-    // Exibir informações sobre a execução
-    console.log('🎯 Build Information:');
-    console.log(`   - Input File: ${config.inputFile}`);
-    console.log(`   - Output Directory: ${config.outputDir}`);
-    console.log(`   - Target Platform: ${config.targets}`);
+  console.log('🎯 Build Information:');
+  console.log(`   - Dist Directory: ${config.outputDirName}`);
+  console.log(`   - Output Directory: ${config.outputDir}`);
+  console.log(`   - Server Directory: ${config.babelSourceDir}`);
+  console.log(`   - Proxy Directory: ${config.babelSourceDir2}`);
+  console.log(`   - API Directory: ${config.babelSourceDir3}`);
 
-    // Copiar node_modules
-    // await copyNodeModules();
+  transpileWithBabel();
+  await packageWithNexe();
 
-    // Transpilar código com Babel
-    transpileWithBabel();
-
-    // Empacotar com Pkg
-    packageWithPkg();
-
-    console.log('🚀 Build completed successfully!');
+  console.log('🚀 Build completed successfully!');
 };
 
-// Executar a função de construção
 buildApp();
