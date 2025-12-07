@@ -103,11 +103,13 @@ export default function roomManager(socket, emitTo, socketTo, socketEmit) {
     const roomModerators = db.getTable('roomModerators');
     const privateRoomData = db.getTable('privateRoomData');
     const roomData = db.getTable('roomData');
+    const rpgSchema = db.getTable('rpgSchema');
 
     socketEmit('room-entered', {
       roomId,
       users,
       mods: (await roomModerators.getAll()) || [],
+      rpgSchema: (await rpgSchema.get(roomId)?.data) || {},
       roomData: (await roomData.get(roomId))?.data || {},
       roomPrivateData:
         userId === room.ownerId || userId === getIniConfig('OWNER_ID')
@@ -867,13 +869,6 @@ export default function roomManager(socket, emitTo, socketTo, socketEmit) {
     if (isPrivate) {
       const privateRoomData = db.getTable('privateRoomData');
       await privateRoomData.set(roomId, { data: values });
-      // const result = await privateRoomData.get(roomId);
-      // Notify all users in the room about the updated data
-      /* socketEmit('room-data-updated', {
-        roomId,
-        isPrivate: true,
-        values: result?.data ?? {},
-      }); */
     }
     // Nope
     else {
@@ -887,6 +882,45 @@ export default function roomManager(socket, emitTo, socketTo, socketEmit) {
         values: result?.data ?? {},
       });
     }
+
+    // Complete
+    fn({ success: true });
+  });
+
+  socket.on('update-room-schema', async (data, fn) => {
+    if (noDataInfo(data, fn)) return;
+    const { roomId, values } = data;
+    // Validate values
+    if (typeof roomId !== 'string' || !isJsonObject(values))
+      return sendIncompleteDataInfo(fn);
+
+    // Get user
+    const userId = userSession.getUserId(socket);
+    if (!userId) return accountNotDetected(fn); // Only logged-in users can update settings
+    if (roomUpdateIsRateLimited(socket, fn)) return;
+
+    // Get room
+    const rooms = db.getTable('rooms');
+    const room = await rooms.get(roomId);
+    if (!room) return fn({ error: true, msg: 'Room not found.', code: 1 });
+
+    // Check if the user is the owner of the room or the server owner
+    if (userId !== room.ownerId && userId !== getIniConfig('OWNER_ID')) {
+      return fn({
+        error: true,
+        msg: `You do not have permission to update this room schema.`,
+        code: 2,
+      });
+    }
+
+    const rpgSchema = db.getTable('rpgSchema');
+    await rpgSchema.set(roomId, { data: values });
+    // Notify all users in the room about the updated data
+    const result = await rpgSchema.get(roomId);
+    socketTo(roomId, 'room-schema-updated', {
+      roomId,
+      values: result?.data ?? {},
+    });
 
     // Complete
     fn({ success: true });
