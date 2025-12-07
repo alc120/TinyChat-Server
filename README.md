@@ -11,6 +11,11 @@ TinyChat aims to provide a simple, modular, and efficient environment for real-t
 * **Availability:** Free to download, use, and test
 * **Stability:** Mostly stable, but some features may still be refined or expanded
 
+## 🌐 Hosting Requirements (PonyDriland)
+
+The website **ponydriland.com** will only accept connections from servers hosted using **HTTPS**.
+If your TinyChat server is running locally at home, you may use the built-in **proxy** as a shortcut to securely expose your database through an HTTPS-enabled tunnel.
+
 ## 📥 Download & Usage
 
 You can freely download the project and start testing it right away.
