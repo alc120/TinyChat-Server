@@ -1,8 +1,8 @@
 import crypto from 'crypto';
 import { isJsonObject } from 'tiny-essentials/basics';
 import TinyPromiseQueue from 'tiny-essentials/libs/TinyPromiseQueue';
+import TinyRateLimiter from 'tiny-essentials/libs/TinyRateLimiter';
 import db from './sql';
-
 const AsyncFunction = (async () => {}).constructor;
 export const roomQueue = new TinyPromiseQueue();
 
@@ -20,9 +20,6 @@ export const _setIniConfig = (where, value) => {
 
 // Track the users in rooms
 export const roomUsers = new Map(); // Stores room users
-
-// Track the timestamps for rate limiting
-export const userMessageTimestamps = new Map();
 
 // Hashed String
 export const getHashString = (text) => crypto.createHash('sha256').update(text).digest('hex');
@@ -143,11 +140,18 @@ export const sendRateLimit = (socketEmit) => {
 
 // Rate limit editor
 export const createRateLimit = (limitCountName = '', itemName = 'items', code = -1) => {
+  const cfg = { 
+    cleanupInterval: 1000,
+    maxIdle: getIniConfig('RATE_LIMIT_TIME'),
+    maxHits: getIniConfig(limitCountName) || 5
+  };
+  const rateLimit = new TinyRateLimiter(cfg);
+
   // Track the events for rate limiting
-  const userEventCounts = new Map();
   return (socket, fn, isUnknown = false) => {
+    
     /** @type {number} */
-    const limitCount = getIniConfig(limitCountName) || 5;
+    const limitCount = cfg.maxHits;
 
     // Is a user
     const userId = !isUnknown
@@ -157,19 +161,9 @@ export const createRateLimit = (limitCountName = '', itemName = 'items', code = 
         : '?.?.?.?';
     if (!userId) return false;
 
-    // Rate limiting logic
-    const currentTime = Date.now();
-    /** @type {number} */
-    const userTimestamp = userMessageTimestamps.get(userId) || 0;
-    /** @type {number} */
-    const userMessageCount = userEventCounts.get(userId) || 0;
-
     // Check if rate limit is exceeded based on RATE_LIMIT_TIME
-    if (
-      currentTime - userTimestamp < getIniConfig('RATE_LIMIT_TIME') &&
-      userMessageCount >= limitCount
-    ) {
-      const rateLimitTime = getIniConfig('RATE_LIMIT_TIME') / 1000;
+    if (rateLimit.isRateLimited()) {
+      const rateLimitTime = cfg.maxIdle / 1000;
       fn({
         error: true,
         ratelimit: true,
@@ -180,19 +174,8 @@ export const createRateLimit = (limitCountName = '', itemName = 'items', code = 
       return true;
     }
 
-    // Update message count and timestamp
-    if (currentTime - userTimestamp > getIniConfig('RATE_LIMIT_TIME')) {
-      // Reset the message count if the rate limit window has passed
-      userEventCounts.set(userId, 1); // Start new count for a new window
-    } else {
-      // Increment message count for messages within the window
-      userEventCounts.set(userId, userMessageCount + 1);
-    }
-
-    // Reset the timestamp for the rate limiting window if within the limit
-    userMessageTimestamps.set(userId, currentTime);
-
     // Free user!
+    rateLimit.hit(userId);
     return false;
   };
 };
